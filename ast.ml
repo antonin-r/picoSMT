@@ -27,7 +27,8 @@ let convert = function
 	| Decision -> failwith "at this point, all decisions should have been made"
 
 
-let satisfy_c c m = List.exists (function l -> convert (Assc.find (extract_id l) m)) c
+let satisfy_c c m = 
+  List.exists (function l -> convert (Assc.find (extract_id l) m)) c
 
 let satisfy f m = List.for_all (function c -> satisfy_c c m) f
 
