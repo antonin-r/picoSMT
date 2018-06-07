@@ -16,31 +16,31 @@ let parse_decl strl =
   | magic :: cnf :: nvar :: ndij :: [] ->
       let () = assert (magic = "p") in
       let () = assert (cnf = "cnf") in
-      let () = assert (String.length nvar = 1) in
-      let () = assert (String.length ndij = 1) in
-      (int_of_char nvar.[0], int_of_char ndij.[0])
+      (int_of_string nvar, int_of_string ndij)
   | _ -> assert false
 
 let parse_exp nvar cond =
-  let () = assert ((String.length cond = 3 || String.length cond = 4)) in
-  if cond.[1] = '=' then
-    let () = assert (String.length cond = 3) in
-    let var1 = int_of_char cond.[0] in
-    let var2 = int_of_char cond.[2] in
+  if String.contains cond '=' then
+    let i = String.index cond '=' in
+    let var1 = String.sub cond 0 i in
+    let var2 = String.sub cond (i + 1) (String.length cond - (i + 1)) in
+    let var1 = int_of_string var1 in
+    let var2 = int_of_string var2 in
     let () = assert (var1 < nvar) in
     let () = assert (var2 < nvar) in
     Eq (var1, var2)
   else
-  if cond.[1] = '<' then
-    let () = assert (String.length cond = 4) in
-    let () = assert (cond.[2] = '>') in
-    let var1 = int_of_char cond.[0] in
-    let var2 = int_of_char cond.[3] in
+    let () = assert (String.contains cond '<') in
+    let i = String.index cond '<' in
+    let () = assert (String.length cond > i + 1) in
+    let () = assert (cond.[i + 1] = '>') in
+    let var1 = String.sub cond  0 i in
+    let var2 = String.sub cond (i + 2) (String.length cond - (i + 2)) in
+    let var1 = int_of_string var1 in
+    let var2 = int_of_string var2 in
     let () = assert (var1 < nvar) in
     let () = assert (var2 < nvar) in
     Neq (var1, var2)
-  else
-    assert false
 
 let rec parse_dij nvar strl : dij =
   match strl with
@@ -77,3 +77,23 @@ let parse_file file_name : cnf =
       let nvar, ndij = parse_decl (line_split h) in
       (nvar, ndij, parse_dijs nvar ndij t)
 
+let print_exp exp =
+  match exp with
+  | Eq  (var1, var2) -> Printf.printf "%i=%i" var1 var2
+  | Neq (var1, var2) -> Printf.printf "%i<>%i" var1 var2
+
+let rec print_dij dij =
+  match dij with 
+  | []     -> print_newline ()
+  | h :: t -> print_exp h ; print_char ' ' ; print_dij t
+
+let rec print_dijs dijl =
+  match dijl with
+  | []     -> ()
+  | h :: t -> print_dij h ; print_dijs t
+
+let print_cnf cnf =
+  let nvar, ndij, dijl = cnf in
+  let () = print_endline "c This file is an output of Parser.print" in
+  let () = Printf.printf "p %i %i\n" nvar ndij in
+  print_dijs dijl

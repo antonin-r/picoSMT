@@ -1,6 +1,6 @@
 c This is a commentary !
 c This is a second commentary !
-p cnf 4 3
+p cnf 5 3
 0=1 2<>3 2=1
 1=2
 3<>4 3=2

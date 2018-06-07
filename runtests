@@ -13,22 +13,25 @@ esac
 
 for step in $(ls test_inputs) 
 do
-  if [ "${!step}" ]; then 
-  for file in test_inputs/$step/good 
-  do
-      if ./picoSMT.native -$step test_inputs/$step/good/$file; then
-        echo "Step $step : Test $file : PASSED"
-      else
-        echo "Step $step : Test $file : FAILED"
-      fi
-    done 
-    for file in test_inputs/$step/bad 
+  if [ "${!step}" ] 
+  then 
+    for file in $(ls test_inputs/$step/good)
     do
-      if ./picoSMT.native -$step test_inputs/$step/good/$file; then
-        echo "Step $step : Test $file : PASSED"
-      else
-        echo "Step $step : Test $file : FAILED"
-      fi
-    done
+        if ./picoSMT.native -verbose -$step test_inputs/$step/good/$file
+        then
+          echo "Step $step : Test $file : PASSED"
+        else
+          echo "Step $step : Test $file : FAILED"
+        fi
+      done 
+      for file in $(ls test_inputs/$step/bad) 
+      do
+        if ./picoSMT.native -verbose -$step test_inputs/$step/good/$file
+        then
+          echo "Step $step : Test $file : PASSED"
+        else
+          echo "Step $step : Test $file : FAILED"
+        fi
+      done
   fi
 done
