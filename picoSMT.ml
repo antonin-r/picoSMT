@@ -3,18 +3,22 @@ let filenames = ref []
 let test = ref false
 let test_list = 
   [("parse", (ref false, Parser.test)); 
-   ("bfs", (ref false, Fordfulk.testbfs)); 
-   ("ff", (ref false, Fordfulk.test));
+   ("bfs", (ref false, Shortest_path.testbfs)); 
+   ("sp", (ref false, Shortest_path.test));
+   ("thcheck", (ref false, Th_checker.test));
   ]
 
 let verbose = ref false
 
 let parse_anonymous str =
   if !test then
-    if not (List.mem_assoc str test_list) then
-      Printf.printf "Error : Unkown test '%s'\n" str
+    if str = "all" then
+      List.iter (fun x -> fst (snd (x)) := true) test_list
     else
-      fst (List.assoc str test_list) := true
+      if not (List.mem_assoc str test_list) then
+        Printf.printf "Error : Unkown test '%s'\n" str
+      else
+        fst (List.assoc str test_list) := true
   else
     filenames := str :: !filenames
 

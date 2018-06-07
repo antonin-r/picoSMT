@@ -19,7 +19,11 @@ let union s i j =
       let () = f.(ci) <- cj in 
       if r.(ci) = r.(cj) then 
         r.(cj) <- r.(cj) + 1
+      else
+        ()
     else
       let () = f.(cj) <- ci in
       if r.(ci) = r.(cj) then
         r.(ci) <- r.(ci) + 1
+      else
+        ()
