@@ -1,28 +1,48 @@
-let filename = ref ""
+let filenames = ref []
 
-let parse = ref false
+let test = ref false
+let test_list = 
+  [("parse", (ref false, Parser.test)); 
+   ("bfs", (ref false, Fordfulk.testbfs)); 
+   ("ff", (ref false, Fordfulk.test));
+  ]
+
 let verbose = ref false
 
-let set_file_name name =
-   let () = filename := name in
-   ()
+let parse_anonymous str =
+  if !test then
+    if not (List.mem_assoc str test_list) then
+      Printf.printf "Error : Unkown test '%s'\n" str
+    else
+      fst (List.assoc str test_list) := true
+  else
+    filenames := str :: !filenames
+
+let rec run_tests testl =
+  match testl with
+  | []     -> print_endline "Tests done"
+  | h :: t -> 
+      (
+        (if !(fst (snd h)) then
+          (snd (snd h)) ()
+        ) ;
+        run_tests t
+      )
 
 let main () = 
-  let () = 
-    Arg.parse [
-    ("-parse", Arg.Set parse, "Stop after parsing the file");
-    ("-verbose", Arg.Set verbose, 
-        "Output many details about steps of resolution")
-    ]
-    set_file_name
-    "Take the name of the input file as argument"
-  in
-  if !parse then
-    let th_cnf = Parser.parse_file !filename in
-    let () = if !verbose then Parser.print_cnf th_cnf in
-    ()
+
+  Arg.parse [
+  ("-test", Arg.Set test, "Run tests on some part of the program");
+  ("-verbose", Arg.Set verbose, 
+      "Output many details about steps of resolution")
+  ]
+  parse_anonymous
+  "Take the name of the input file as argument" ;
+
+  if !test then
+    run_tests test_list
   else
-  ()
+    print_endline "Solver not implemented yet"
 
 ;;
 main ()

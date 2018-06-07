@@ -1,5 +1,7 @@
 open Th_ast
 
+(* Parser *)
+
 let line_split =
   String.split_on_char ' '
 
@@ -69,6 +71,7 @@ let rec parse_dijs nvar ndij linel : dij list =
 let parse_file file_name : cnf =
   let inc = open_in file_name in
   let linel = parse_inc inc in
+  let () = close_in inc in
   let linel = skip_com linel in
   match linel with
   | []     -> assert false
@@ -76,6 +79,8 @@ let parse_file file_name : cnf =
       let () = assert (is_decl h) in
       let nvar, ndij = parse_decl (line_split h) in
       (nvar, ndij, parse_dijs nvar ndij t)
+
+(* Printer *)
 
 let print_exp exp =
   match exp with
@@ -97,3 +102,18 @@ let print_cnf cnf =
   let () = print_endline "c This file is an output of Parser.print" in
   let () = Printf.printf "p %i %i\n" nvar ndij in
   print_dijs dijl
+
+(* Test *)
+
+let rec aux_test filel =
+  match filel with
+  | []     -> ()
+  | h :: t -> 
+      print_cnf (parse_file ("parsetest/" ^ h)) ;
+      Printf.printf "Test : Parsing : %s : PASSED\n" h ;
+      aux_test t
+
+let test () =
+  let () = print_endline "Test : Parsing : Started" in
+  let filel = Array.to_list (Sys.readdir "parsetest") in
+  aux_test filel
