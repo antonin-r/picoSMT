@@ -1,4 +1,5 @@
 open Types
+open Functors
 
 let filenames = ref []
 
@@ -32,7 +33,6 @@ let rec run_tests testl =
         run_tests t
       )
 
-
 let process_file filename =
   let th_cnfp = Parser.parse_file filename in
   let () = print_endline "Theory cnf" in
@@ -45,9 +45,20 @@ let process_file filename =
   let sat_res = Sat.dpll sat_cnf in
   let () = print_endline "Sat res" in
   let () = Printer.print_sat_res sat_res in
-  let th_constraints = List.map eol in
+  let sat_assig =
+    match sat_res with
+    | []     -> assert false
+    | (sat_assig, _, _) :: t -> sat_assig
+  in
+  let bindings = Sat_assoc.bindings sat_assig in
+  let distrib = Array.of_list (List.map snd bindings) in
+  let distrib = Array.map fst distrib in
+  let () = print_endline "Distribution" in
+  let () = 
+    Array.iter (fun x -> if x then print_char 't' else print_char 'f') distrib;
+    print_newline ()
+  in
   ()
-
 
 let main () = 
 
@@ -64,7 +75,6 @@ let main () =
   else
     let () = print_endline "Testing things" in
     List.iter process_file !filenames
-
 
 ;;
 main ()

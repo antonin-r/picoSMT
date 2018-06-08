@@ -10,10 +10,19 @@ let rec iter_dijs f dijs =
   | []     -> ()
   | h :: t -> iter_dij f h ; iter_dijs f t
 
+let normalize_pair (v1, v2) =
+  if v1 < v2 then
+    (v1, v2)
+  else
+  if v2 < v1 then
+    (v2, v1)
+  else
+    assert false
+
 let extract_pair exp =
   match exp with
-  | Eq (var1, var2)  -> var1, var2
-  | Neq (var1, var2) -> var1, var2
+  | Eq (var1, var2)  -> normalize_pair (var1, var2)
+  | Neq (var1, var2) -> normalize_pair (var1, var2)
 
 let add_hashtbl_exp table boolvar exp =
   let pair = extract_pair exp in
@@ -23,7 +32,7 @@ let add_hashtbl_exp table boolvar exp =
 
 let add_array_exp table arr exp =
   let pair = extract_pair exp in
-  arr.(Hashtbl.find table pair) <- pair
+  arr.(Hashtbl.find table pair) <- normalize_pair pair
 
 let mk_converter cnf =
   let (nvar, ndij, dijs) = cnf in
@@ -36,8 +45,8 @@ let mk_converter cnf =
   let () = iter_dijs f dijs in
   let literal_of_exp exp =
     match exp with
-    | Eq (var1, var2)  -> Y (Hashtbl.find table (var1, var2))
-    | Neq (var1, var2) -> N (Hashtbl.find table (var1, var2))
+    | Eq (var1, var2)  -> Y (Hashtbl.find table (normalize_pair (var1, var2)))
+    | Neq (var1, var2) -> N (Hashtbl.find table (normalize_pair (var1, var2)))
   in
   let exp_of_literal literal =
     match literal with
