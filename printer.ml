@@ -1,4 +1,5 @@
 open Types
+open Functors
 
 (* Theory structures *)
 
@@ -10,7 +11,7 @@ let print_th_exp exp =
 let rec print_th_dij dij =
   match dij with 
   | []     -> print_newline ()
-  | h :: t -> print_th_exp h ; print_char ' ' ; print_dij t
+  | h :: t -> print_th_exp h ; print_char ' ' ; print_th_dij t
 
 let rec print_th_cnf th_cnf =
   List.iter print_th_dij th_cnf
@@ -29,8 +30,8 @@ let print_sat_exp sat_exp =
   | N v -> print_char '!'; print_int v
 
 let print_sat_dij sat_dij =
-  List.iter (fun x -> print_sat_exp h; print_char ' ') sat_dij;
-  print_newline ();
+  List.iter (fun x -> print_sat_exp x; print_char ' ') sat_dij;
+  print_newline ()
 
 let print_sat_cnf sat_cnf = 
   List.iter print_sat_dij sat_cnf

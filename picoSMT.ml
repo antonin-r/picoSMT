@@ -1,11 +1,10 @@
+open Types
+
 let filenames = ref []
 
 let test = ref false
 let test_list = 
-  [("parse", (ref false, Parser.test)); 
-   ("bfs", (ref false, Shortest_path.testbfs)); 
-   ("sp", (ref false, Shortest_path.test));
-   ("thcheck", (ref false, Th_checker.test));
+  [
   ]
 
 let verbose = ref false
@@ -33,6 +32,23 @@ let rec run_tests testl =
         run_tests t
       )
 
+
+let process_file filename =
+  let th_cnfp = Parser.parse_file filename in
+  let () = print_endline "Theory cnf" in
+  let () = Printer.print_th_cnfp th_cnfp in
+  let _, _, th_cnf = th_cnfp in
+  let loe, eol = Convert.mk_converter th_cnfp in
+  let sat_cnf = Convert.cnf loe th_cnf in
+  let () = print_endline "Sat cnf" in
+  let () = Printer.print_sat_cnf sat_cnf in
+  let sat_res = Sat.dpll sat_cnf in
+  let () = print_endline "Sat res" in
+  let () = Printer.print_sat_res sat_res in
+  let th_constraints = List.map eol in
+  ()
+
+
 let main () = 
 
   Arg.parse [
@@ -46,7 +62,9 @@ let main () =
   if !test then
     run_tests test_list
   else
-    print_endline "Solver not implemented yet"
+    let () = print_endline "Testing things" in
+    List.iter process_file !filenames
+
 
 ;;
 main ()

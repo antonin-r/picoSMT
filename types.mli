@@ -8,7 +8,7 @@ type sat_cnf = sat_dij list
 
 type sat_ext_literal = bool * int
 type sat_assig = sat_ext_literal Sat_assoc.t
-type sat_ext_assig = set_assig * int * int
+type sat_ext_assig = sat_assig * int * int
 type sat_res = sat_ext_assig list
 
 type th_exp = Eq of var * var | Neq of var * var

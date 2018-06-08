@@ -1,4 +1,5 @@
-open Th_ast
+open Types
+open Functors
 
 (* Parser *)
 
@@ -44,7 +45,7 @@ let parse_exp nvar cond =
     let () = assert (var2 < nvar) in
     Neq (var1, var2)
 
-let rec parse_dij nvar strl : dij =
+let rec parse_dij nvar strl : th_dij =
   match strl with
   | []     -> []
   | h :: t -> (parse_exp nvar h) :: (parse_dij nvar t)
@@ -60,7 +61,7 @@ let rec skip_com linel =
   | []     -> assert false
   | h :: t -> if is_com h then skip_com t else linel
 
-let rec parse_dijs nvar ndij linel : dij list =
+let rec parse_dijs nvar ndij linel : th_cnf =
   match linel with
   | []     -> 
       let () = assert (ndij = 0) in
@@ -68,7 +69,7 @@ let rec parse_dijs nvar ndij linel : dij list =
   | h :: t -> 
       (parse_dij nvar (line_split h)) :: (parse_dijs nvar (ndij - 1) t)
 
-let parse_file file_name : cnf =
+let parse_file file_name : th_cnfp =
   let inc = open_in file_name in
   let linel = parse_inc inc in
   let () = close_in inc in
@@ -79,41 +80,3 @@ let parse_file file_name : cnf =
       let () = assert (is_decl h) in
       let nvar, ndij = parse_decl (line_split h) in
       (nvar, ndij, parse_dijs nvar ndij t)
-
-(* Printer *)
-
-let print_exp exp =
-  match exp with
-  | Eq  (var1, var2) -> Printf.printf "%i=%i" var1 var2
-  | Neq (var1, var2) -> Printf.printf "%i<>%i" var1 var2
-
-let rec print_dij dij =
-  match dij with 
-  | []     -> print_newline ()
-  | h :: t -> print_exp h ; print_char ' ' ; print_dij t
-
-let rec print_dijs dijl =
-  match dijl with
-  | []     -> ()
-  | h :: t -> print_dij h ; print_dijs t
-
-let print_cnf cnf =
-  let nvar, ndij, dijl = cnf in
-  let () = print_endline "c This file is an output of Parser.print" in
-  let () = Printf.printf "p %i %i\n" nvar ndij in
-  print_dijs dijl
-
-(* Test *)
-
-let rec aux_test filel =
-  match filel with
-  | []     -> ()
-  | h :: t -> 
-      print_cnf (parse_file ("parsetest/" ^ h)) ;
-      Printf.printf "Test : Parsing : %s : PASSED\n" h ;
-      aux_test t
-
-let test () =
-  let () = print_endline "Test : Parsing : Started" in
-  let filel = Array.to_list (Sys.readdir "parsetest") in
-  aux_test filel

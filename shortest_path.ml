@@ -58,27 +58,6 @@ let bfs graph i e =
   in
   status
 
-(* BFS testing *)
-
-let testbfs () =
-  let () = print_endline "Test : Bfs : Started" in
-  let graph1 = [|[1]; [0]|] in
-  let graph2 = [|[]; []|] in
-  let graph3 = [|[1; 2]; [3; 0; 2]; [1; 0]; [4; 1]; [3]|] in
-  let sol1 = [|Visited 0; Visited 0|] in
-  let sol2 = [|Visited 0; Unknown|] in
-  let sol3 = [|Visited 0; Visited 0; Visited 0; Visited 1; Visited 3|] in
-  let () = print_endline "Test : Bfs : Running test 1" in
-  let res1 = bfs graph1 0 1 in
-  let () = print_endline "Test : Bfs : Running test 2" in
-  let res2 = bfs graph2 0 1 in
-  let () = print_endline "Test : Bfs : Running test 3" in
-  let res3 = bfs graph3 0 4 in
-  let pres = fun b -> if b then "PASSED" else "FAILED" in
-  Printf.printf "Test : Bfs : Test1 : %s\n" (pres (res1 = sol1));
-  Printf.printf "Test : Bfs : Test2 : %s\n" (pres (res2 = sol2));
-  Printf.printf "Test : Bfs : Test3 : %s\n" (pres (res3 = sol3))
-
 (* Shortest path retreival *)
 
 let rec retreive_path status i node l =
@@ -92,19 +71,3 @@ let rec retreive_path status i node l =
 let shortest_path graph i e =
   let status = bfs graph i e in
   retreive_path status i e []
-      
-(* Ff testing *)
-
-let test () =
-  let () = print_endline "Test : Sp : Started" in
-  let graph1 = [|[1]; [0]|] in
-  let graph2 = [|[1; 2]; [3; 0; 2]; [1; 0]; [4; 1]; [3]|] in
-  let sol1 = [0; 1] in
-  let sol2 = [0; 1; 3; 4] in
-  let () = print_endline "Test : Sp : Running test 1" in
-  let res1 = shortest_path graph1 0 1 in
-  let () = print_endline "Test : Sp : Running test 2" in
-  let res2 = shortest_path graph2 0 4 in
-  let pres = fun b -> if b then "PASSED" else "FAILED" in
-  Printf.printf "Test : Sp : Test1 : %s\n" (pres (res1 = sol1));
-  Printf.printf "Test : Sp : Test2 : %s\n" (pres (res2 = sol2));

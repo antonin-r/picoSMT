@@ -1,24 +1,5 @@
-type var = int
-
-module Assc = Map.Make(struct type t = int let compare = compare end)
-
-type literal = Y of var | N of var
-
-(* DPLL : decision literal *)
-type ext_literal = bool * bool
-
-(* disjunction of literals *)
-type ld = literal list
-
-(* conjunctive normal form *)
-type cnf = ld list
-
-(* assignment *)
-(* type assig = ext_literal list * int *)
-type assig = ext_literal Assc.t
-
-type ext_assig = assig * int
-
+open Types
+open Functors
 
 let extract_id = function
   | Y v -> v
@@ -26,10 +7,10 @@ let extract_id = function
 
 let satisfy_c c m =
   List.exists (function l ->
-    if Assc.mem (extract_id l) m
+    if Sat_assoc.mem (extract_id l) m
     then
       begin
-        let b = fst (Assc.find (extract_id l) m) in match l with
+        let b = fst (Sat_assoc.find (extract_id l) m) in match l with
           Y v -> b
         | N v -> not b
       end
@@ -53,7 +34,7 @@ let debug id assig nb_decisions id_last_decision (* decisions *) =
         print_string " -> ";
         print_int (if fst y then 1 else 0);
         print_string "\n";
-    ) (Assc.bindings assig);
+    ) (Sat_assoc.bindings assig);
   print_string ">\n"
 
 
@@ -85,7 +66,7 @@ let rec aux_clause f id assigs acc = function
           end
         else
           begin
-            if acc <> [] && not (satisfy_c acc assig) && not (Assc.mem literal_id assig)
+            if acc <> [] && not (satisfy_c acc assig) && not (Sat_assoc.mem literal_id assig)
             then
               (* unit *)
               begin
@@ -94,20 +75,20 @@ let rec aux_clause f id assigs acc = function
                   Y v -> true
                 | N v -> false
                 in
-                let new_assig = Assc.add literal_id (converted_l, id) assig in
+                let new_assig = Sat_assoc.add literal_id (converted_l, id) assig in
                 let new_assigs = (new_assig, nb_decisions, id_last_decision) :: (List.tl assigs) in
                 id+1, new_assigs
               end
             else
               begin
-                if not @@ Assc.mem literal_id assig
+                if not @@ Sat_assoc.mem literal_id assig
                 then
                   (* decide *)
                   begin
                     print_string "decide\n";
                     let converted_l = true
                     in
-                    let new_assig = Assc.add literal_id (converted_l, id) assig in
+                    let new_assig = Sat_assoc.add literal_id (converted_l, id) assig in
                     let assig_1 = (new_assig, nb_decisions + 1, literal_id)
                     in
                     let assig_2 = (assig, nb_decisions, id_last_decision) in
@@ -130,13 +111,13 @@ let rec aux_clause f id assigs acc = function
                         begin
                           print_string "backtrack\n";
                           let backtrack_assig, _, old_id_last_decision = List.hd (List.tl assigs) in
-                          let literal_value, literal_clause_def = Assc.find id_last_decision assig in
+                          let literal_value, literal_clause_def = Sat_assoc.find id_last_decision assig in
 
                           (* if old_id_last_decision = -1, then you can empty the assig *)
                           let limit_l_clause_def =
-                            if Assc.mem id_last_decision assig
+                            if Sat_assoc.mem id_last_decision assig
                             then
-                              snd (Assc.find id_last_decision assig)
+                              snd (Sat_assoc.find id_last_decision assig)
                             else
                               -1
                           in
@@ -144,17 +125,17 @@ let rec aux_clause f id assigs acc = function
                             (
                               function a ->
                               function b ->
-                              let temp_l_clause_def = snd @@ Assc.find b assig
+                              let temp_l_clause_def = snd @@ Sat_assoc.find b assig
                               in
                               if temp_l_clause_def >= limit_l_clause_def
-                              then Assc.remove b a
+                              then Sat_assoc.remove b a
                               else a
                             )
                             assig
-                            (List.map fst (Assc.bindings assig))
+                            (List.map fst (Sat_assoc.bindings assig))
                           in
 
-                          let new_backtrack_assig = Assc.add id_last_decision (not literal_value, literal_clause_def) new_backtrack_assig in
+                          let new_backtrack_assig = Sat_assoc.add id_last_decision (not literal_value, literal_clause_def) new_backtrack_assig in
 
                           let new_backtrack_assig_tuple = (new_backtrack_assig, nb_decisions - 1, old_id_last_decision) in
 
@@ -184,8 +165,8 @@ let f3 = function
 
 
 let dpll f =
-  let assigs = [(Assc.empty, 0, -1)] in
-  let decisions = Assc.singleton (-1) true in
+  let assigs = [(Sat_assoc.empty, 0, -1)] in
+  let decisions = Sat_assoc.singleton (-1) true in
   let clauses = Array.of_list f in
   let lgth_clauses = Array.length clauses in
 
@@ -195,28 +176,3 @@ let dpll f =
     b := aux_clause f (f1 !b) (f2 !b) [] clauses.(f1 !b);
   done;
   f2 !b
-
-let test () =
-  let () = print_endline "Test : sat : started" in
-  let a = dpll [
-  (* [L_id 2 ; L_id 3] ; [L_not 1 ; L_id 5] *)
-    [N 1 ; Y 2] ;
-    [N 3 ; Y 4] ;
-    [N 5 ; N 6] ;
-    [Y 6 ; N 5 ; N 2] ;
-    [Y 5 ; Y 7] ;
-    [Y 5 ; N 7 ; N 2]
-  ] in
-  let b, _, _ = List.hd a in
-  print_int (Assc.cardinal b);
-  print_string "\n";
-  print_string "-----\n";
-  List.iter
-    (function (x, y) ->
-        print_int x;
-        print_string " -> ";
-        print_int (if fst y then 1 else 0);
-        print_string " ; ";
-        print_int (snd y);
-        print_string "\n";
-    ) (Assc.bindings b);;
