@@ -43,3 +43,19 @@ let mk_converter cnf =
     | Ast.Not i -> Neq arr.(i)
   in
   literal_of_exp, exp_of_literal
+
+(* Testing *)
+
+let rec aux_test filel =
+  match filel with
+  | []     -> ()
+  | h :: t ->
+      let cnf = parse_file ("test/" ^ h) in
+      let literal_of_exp, exp_of_literal = mk_converter cnf in
+      let 
+
+let test () =
+  let () = print_endline "Test : Convert : Started" in
+  let filel = Array.to_list (Sys.readdir "test") in
+  aux_test filel
+

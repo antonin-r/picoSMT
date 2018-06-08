@@ -3,9 +3,10 @@ let filenames = ref []
 let test = ref false
 let test_list = 
   [("parse", (ref false, Parser.test)); 
-   ("bfs", (ref false, Shortest_path.testbfs)); 
+   ("dag", (ref false, Dag.test));
+(*   ("bfs", (ref false, Shortest_path.testbfs)); 
    ("sp", (ref false, Shortest_path.test));
-   ("thcheck", (ref false, Th_checker.test));
+   ("thcheck", (ref false, Th_checker.test)); *)
   ]
 
 let verbose = ref false
