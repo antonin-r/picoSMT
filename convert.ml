@@ -1,4 +1,5 @@
 open Types
+open Functors
 
 let rec iter_dij f dij =
   match dij with
@@ -58,3 +59,18 @@ let mk_converter cnf =
 let cnf f =
   let g x = List.map (List.map f) x in
   g
+
+let retreive_sat_expl sat_res =
+  let sat_assig =
+    match sat_res with
+    | []     -> assert false
+    | (sat_assig, _, _) :: t -> sat_assig
+  in
+  let bindings = Sat_assoc.bindings sat_assig in
+  let distrib = List.map snd bindings in
+  let distrib = List.map fst distrib in
+  let build_sat_exp i b =
+    if b then Y i else N i
+  in
+  List.mapi build_sat_exp distrib
+

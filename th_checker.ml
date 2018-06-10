@@ -57,5 +57,5 @@ let check nvar expl =
   let f = fun (v1, v2) -> Uf.union s v1 v2 in
   let () = List.iter f eq in
   match check_neq s neq with
-  | Cn_true           -> RTrue
-  | Cn_false (v1, v2) -> RFalse (get_explaination nvar eq v1 v2)
+  | Cn_true           -> Thtrue
+  | Cn_false (v1, v2) -> Thfalse (get_explaination nvar eq v1 v2)

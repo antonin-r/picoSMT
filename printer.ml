@@ -22,6 +22,13 @@ let print_th_cnfp th_cnfp =
   let () = Printf.printf "p %i %i\n" nvar ndij in
   print_th_cnf cnf
 
+let print_th_res th_res =
+  match th_res with
+  | Thtrue              -> print_endline "Match !"
+  | Thfalse explanation ->
+      print_endline "Impossible";
+      print_th_dij explanation
+
 (* Sat structures *)
 
 let print_sat_exp sat_exp =
