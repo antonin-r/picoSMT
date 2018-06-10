@@ -5,6 +5,10 @@ let extract_id = function
   | Y v -> v
   | N v -> v
 
+let extract_value = function
+  | Y v -> true
+  | N v -> false
+
 let satisfy_c c m =
   List.exists (function l ->
     if Sat_assoc.mem (extract_id l) m
@@ -37,6 +41,71 @@ let debug id assig nb_decisions id_last_decision (* decisions *) =
     ) (Sat_assoc.bindings assig);
   print_string ">\n"
 
+(*
+- first step : check whether the formula contains an unsatisfiable clause,
+taken independantly of the others
+- second step : check whether the formula contains any clause of length <= 1 ;
+such clauses determine the value of a possible solution and can be removed,
+and the concerned variables set to the corresponding values
+- third step (?) : check whether there are variables that are present in the
+formula always under the same literal form ; such variables can be fixed,
+###
+it is important to note that the assignments made in this pre-treatment (2 and
+ 3) are not handled as "classical" decisions
+*)
+let check_formula_1 f =
+  let rec check_clause_1 acc = function
+      [] -> true
+    | l::c ->
+      let literal_id = extract_id l in
+      let literal_value = extract_value l in
+      if Sat_assoc.mem literal_id acc
+      then
+        if literal_value = Sat_assoc.find literal_id acc
+        then
+          check_clause_1 acc c
+        else
+          false
+      else
+        check_clause_1 (Sat_assoc.add literal_id literal_value acc) c
+  in
+  List.for_all (function c -> check_clause_1 (Sat_assoc.empty) c) f
+
+let rec check_formula_2 acc acc_f = function
+    [] -> true, acc, acc_f
+  | c::cs ->
+    if List.length c = 0
+    then
+      check_formula_2 acc acc_f cs
+    else
+      if List.length c = 1
+      then
+        let literal = List.hd c in
+        let literal_id = extract_id literal in
+        let literal_value = extract_value literal in
+        if Sat_assoc.mem literal_id acc
+        then
+          if literal_value, a = Sat_assoc.find literal_id acc
+          then
+            check_formula_2 acc acc_f cs
+          else
+            false, acc, acc_f
+        else
+          check_formula_2 (Sat_assoc.add literal_id (literal_value, -1) acc) (c::acc_f) cs
+      else
+        check_formula_2 acc (c::acc_f) cs
+
+let check_formula f =
+  if check_formula_1 f
+  then
+    let b, preassig, new_f = check_formula_2 (Sat_assoc.empty) f in
+    if b
+    then
+      new_f, preassig
+    else
+      failwith "there are two clauses of the forms [a] and [not(a)]"
+  else
+    failwith "there is an unsatisfiable clause in this formula"
 
 let rec aux_clause f id assigs acc = function
     [] -> id+1, assigs
@@ -153,26 +222,15 @@ let rec aux_clause f id assigs acc = function
           end
       end
 
-
-let f1 = function
-  | a, b -> a
-
-let f2 = function
-  | a, b -> b
-
-let f3 = function
-  | a, b, c -> c
-
-
-let dpll f =
-  let assigs = [(Sat_assoc.empty, 0, -1)] in
-  let decisions = Sat_assoc.singleton (-1) true in
+(* let assigs = [(Sat_assoc.empty, 0, -1)] in *)
+let dpll f assigs =
+  (* let decisions = Sat_assoc.singleton (-1) true in *)
   let clauses = Array.of_list f in
   let lgth_clauses = Array.length clauses in
 
   let b = ref (0, assigs) in
-  while (f1 !b) >= 0 && (f1 !b) < lgth_clauses do
-    print_int (f1 !b); print_string "\n";
-    b := aux_clause f (f1 !b) (f2 !b) [] clauses.(f1 !b);
+  while (fst !b) >= 0 && (fst !b) < lgth_clauses do
+    print_int (fst !b); print_string "\n";
+    b := aux_clause f (fst !b) (snd !b) [] clauses.(fst !b);
   done;
-  f2 !b
+  snd !b
