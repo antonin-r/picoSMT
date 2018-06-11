@@ -89,13 +89,44 @@ let rec check_formula_2 acc acc_f = function
       else
         check_formula_2 acc (c::acc_f) cs
 
+let check_formula_3 f =
+  let rec check_clause_3 acc = function
+    [] -> acc
+  | l::c ->
+    let literal_id = extract_id l in
+    let literal_value = extract_value l in
+    if Sat_assoc.mem literal_id acc
+    then
+      let value, interesting = Sat_assoc.find literal_id acc in
+      if interesting
+      then
+        if literal_value = value
+        then
+          check_clause_3 acc c
+        else
+          let new_acc_1 = Sat_assoc.remove literal_id acc in
+          let new_acc_2 = Sat_assoc.add literal_id (value, false) new_acc_1 in
+          check_clause_3 new_acc_2 c
+      else
+        check_clause_3 acc c
+    else
+      check_clause_3 (Sat_assoc.add literal_id (literal_value, true) acc) c
+
+  in
+  List.fold_left check_clause_3 Sat_assoc.empty f
+
 let check_formula f =
   if check_formula_1 f
   then
     let b, preassig, new_f = check_formula_2 (Sat_assoc.empty) [] f in
     if b
     then
-      new_f, preassig
+      let updated_preassig_to_filter = Sat_assoc.bindings (check_formula_3 new_f) in
+      let updated_preassig_set = List.filter
+      	(function (a, (b, c)) -> c) updated_preassig_to_filter in
+      let updated_preassig = List.fold_left
+      	(function s -> function (k, v) -> Sat_assoc.add k (fst v, -1) s) preassig updated_preassig_set in
+      new_f, updated_preassig
     else
       raise Not_sat
   else
