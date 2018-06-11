@@ -1,0 +1,46 @@
+\documentclass[a4paper, 11pt, twoside]{article}
+\usepackage[margin = 2cm]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[francais]{babel}
+\usepackage{hyperref}
+
+\title{\texttt{picoSMT} : Solveur SMT basique}
+\author{Martin Janin, Antonin Reitz}
+\date{2018}
+
+\begin{document}
+
+\maketitle
+
+\texttt{picoSAT} est un solveur SMT basique pour la théorie de l'égalité, qui se compose de manière classique de deux parties :
+\begin{itemize}
+\item un solveur SAT ;
+\item une procédure de décision (pour la théorie choisie, ici de l'égalité entre variables).
+\end{itemize}
+
+\section{Solveur SAT}
+
+Le solveur SAT implémenté repose sur l'algorithme DPLL et utilise le module Map en tant que structure de données associative persistante. Un prétraitement classique est appliqué à la formule avant cette passe et retourne à la fois une formule modifiée en conséquence et un début d'assignement.
+
+Afin de rendre le backtrack possible et d'atteindre un minimum d'efficacité, l'algorithme garde en mémoire une liste d'assignements (ainsi que le nombre de décisions faites et l'identifiant de dernière décision propres à chacun) sous forme de Map qui à un identifiant de variable $i$ de type \texttt{int} associe le couple $(v, n)$, où $v$ et $n$ sont respectivement la valeur associée à cet identifiant et l'identifiant de clause dans laquelle le littéral correspondant a été pour la dernière fois modifié.
+
+\section{Procédure de décision}
+
+La partie du programme qui vérifie la conformité de la distribution de vérité
+renvoyée par le solveur SAT utilise une structure de Union-Find comme préconisé.
+Nous n'avons cependant pas utilisé la structure de Union-Find persistante, car
+de nombreux ajustements sont à faire dans les informations renvoyées par le
+solveur SAT pour pouvoir faire correctement les rebroussements du coté du
+Union-Find.
+Lorque le Union-Find "choue et que la distribution de vérité n'est pas cohérente
+avec la théorie, nous utilisons un graphe, dont les sommets représentent les 
+variables de la théories, et les arêtes des égalités, pour trouver une clause
+explicative minimale de l'échec. Un simple parcours en largeur donne le plus
+cours chemin entre les deux variables qui appartiennent à la même classe
+d'équivalence mais dont la différence devrait être assurée.
+
+\end{document}
+
+

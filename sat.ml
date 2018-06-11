@@ -150,7 +150,7 @@ let rec aux_clause f id assigs acc = function
       end
     else
       begin
-        if satisfy_c (acc@[l]@clause) assig
+        if satisfy_c (l::acc@clause) assig
         then
           begin
           (* next *)
