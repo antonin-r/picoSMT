@@ -19,6 +19,8 @@
 \item un solveur SAT ;
 \item une procédure de décision (pour la théorie choisie, ici de l'égalité entre variables).
 \end{itemize}
+Le lien du dépot git :
+\url{https://github.com/antonin-r/picoSMT}
 
 \section{Solveur SAT}
 
@@ -34,7 +36,7 @@ Nous n'avons cependant pas utilisé la structure de Union-Find persistante, car
 de nombreux ajustements sont à faire dans les informations renvoyées par le
 solveur SAT pour pouvoir faire correctement les rebroussements du coté du
 Union-Find.
-Lorque le Union-Find "choue et que la distribution de vérité n'est pas cohérente
+Lorque le Union-Find échoue et que la distribution de vérité n'est pas cohérente
 avec la théorie, nous utilisons un graphe, dont les sommets représentent les 
 variables de la théories, et les arêtes des égalités, pour trouver une clause
 explicative minimale de l'échec. Un simple parcours en largeur donne le plus

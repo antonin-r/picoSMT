@@ -1,2 +1,0 @@
-# picoSMT
-SMT solver
