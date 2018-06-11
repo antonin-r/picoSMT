@@ -67,10 +67,8 @@ let retreive_sat_expl sat_res =
     | (sat_assig, _, _) :: t -> sat_assig
   in
   let bindings = Sat_assoc.bindings sat_assig in
-  let distrib = List.map snd bindings in
-  let distrib = List.map fst distrib in
-  let build_sat_exp i b =
+  let build_sat_exp (i, (b, unused)) =
     if b then Y i else N i
   in
-  List.mapi build_sat_exp distrib
+  List.map build_sat_exp bindings
 

@@ -23,7 +23,6 @@ let parse_decl strl =
   | _ -> assert false
 
 let parse_exp nvar cond =
-  let () = print_endline cond in
   if String.contains cond '=' then
     let i = String.index cond '=' in
     let var1 = String.sub cond 0 i in

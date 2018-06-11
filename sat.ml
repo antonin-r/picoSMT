@@ -23,23 +23,15 @@ let satisfy_c c m =
 
 let satisfy f m = List.for_all (function c -> satisfy_c c m) f
 
-let debug id assig nb_decisions id_last_decision (* decisions *) =
-  print_string "<\n<";
-  print_int id;
-  print_string "> ";
-  print_int nb_decisions;
-  print_string " ";
-  print_int id_last_decision;
-  print_string "\n";  
-  print_string "assig:\n";
-  List.iter
-    (function (x, y) ->
-        print_int x;
-        print_string " -> ";
-        print_int (if fst y then 1 else 0);
-        print_string "\n";
-    ) (Sat_assoc.bindings assig);
-  print_string ">\n"
+let debug id (assig : Types.sat_assig) nb_decisions id_last_decision =
+  Printf.printf ("Id :               %i\nNb decision :      %i\n" ^^ 
+    "Id last decision : %i\n")
+    id nb_decisions id_last_decision;
+  List.iter 
+    (fun (i, (b, d)) -> Printf.printf "%i:%i(%i) " i (if b then 1 else 0) d) 
+    (Sat_assoc.bindings assig);
+  print_newline ();
+  print_newline ()
 
 (*
 - first step : check whether the formula contains an unsatisfiable clause,
@@ -112,7 +104,6 @@ let rec aux_clause f id assigs acc = function
   | l::clause ->
     let assig, nb_decisions, id_last_decision = List.hd assigs in
     
-    print_string "\n";
     debug id assig nb_decisions id_last_decision;
 
     let literal_id = extract_id l in
@@ -121,7 +112,7 @@ let rec aux_clause f id assigs acc = function
     then
       begin
       (* SAT *)
-      print_string "SAT\n";
+      print_string ">>>SAT\n";
       -2, assigs
       end
     else
@@ -130,7 +121,7 @@ let rec aux_clause f id assigs acc = function
         then
           begin
           (* next *)
-          print_string "next clause\n";
+          print_string ">>>Next clause\n";
           id+1, assigs
           end
         else
@@ -139,7 +130,7 @@ let rec aux_clause f id assigs acc = function
             then
               (* unit *)
               begin
-                print_string "unit\n";
+                print_string ">>>Unit\n";
                 let converted_l = match l with
                   Y v -> true
                 | N v -> false
@@ -154,7 +145,7 @@ let rec aux_clause f id assigs acc = function
                 then
                   (* decide *)
                   begin
-                    print_string "decide\n";
+                    print_string ">>>Decide\n";
                     let converted_l = true
                     in
                     let new_assig = Sat_assoc.add literal_id (converted_l, id) assig in
@@ -169,7 +160,7 @@ let rec aux_clause f id assigs acc = function
                   then
                     (* allright, why not, continue in this clause *)
                     begin
-                      print_string "continue\n";
+                      print_string ">>>Continue\n";
                       aux_clause f id assigs (l::acc) clause
                     end
                   else
@@ -178,7 +169,7 @@ let rec aux_clause f id assigs acc = function
                       then
                         (* backtrack *)
                         begin
-                          print_string "backtrack\n";
+                          print_string ">>>Backtrack\n";
                           let backtrack_assig, _, old_id_last_decision = List.hd (List.tl assigs) in
                           let literal_value, literal_clause_def = Sat_assoc.find id_last_decision assig in
 
@@ -214,7 +205,7 @@ let rec aux_clause f id assigs acc = function
                         end
                       else
                         begin
-                          print_string "fail\n";
+                          print_string ">>>Fail\n";
                           -1, assigs
                         end
                     end
@@ -230,7 +221,7 @@ let dpll f assigs =
 
   let b = ref (0, assigs) in
   while (fst !b) >= 0 && (fst !b) < lgth_clauses do
-    print_int (fst !b); print_string "\n";
+    Printf.printf "Clause : %i \n" (fst !b);
     b := aux_clause f (fst !b) (snd !b) [] clauses.(fst !b);
   done;
   snd !b
