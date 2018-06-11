@@ -15,5 +15,6 @@ type th_exp = Eq of var * var | Neq of var * var
 type th_dij = th_exp list
 type th_cnf = th_dij list
 type th_cnfp = int * int * th_cnf
+type th_puf = Puf.t
 
 type th_res = Thtrue | Thfalse of th_exp list

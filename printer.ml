@@ -43,12 +43,15 @@ let print_sat_dij sat_dij =
 let print_sat_cnf sat_cnf = 
   List.iter print_sat_dij sat_cnf
 
-let rec print_sat_res res = 
-  let b, _, _ = List.hd res in
-  Printf.printf "Nb defined lits : %i\n" (Sat_assoc.cardinal b);
+let rec print_sat_assoc assoc =
+  Printf.printf "Nb defined lits : %i\n" (Sat_assoc.cardinal assoc);
   print_string "-----\n";
   List.iter
     (function (x, y) ->
         Printf.printf "%i -> %i   (%i)\n" x (if fst y then 1 else 0) (snd y)
     ) 
-    (Sat_assoc.bindings b);
+    (Sat_assoc.bindings assoc)
+
+let rec print_sat_res res = 
+  let last_assoc, _, _ = List.hd res in
+  print_sat_assoc last_assoc

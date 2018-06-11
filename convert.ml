@@ -72,3 +72,10 @@ let retreive_sat_expl sat_res =
   in
   List.map build_sat_exp bindings
 
+let retreive_sat_order sat_res =
+  List.map (fun (x,y,z) -> z) sat_res
+
+let invert th_exp =
+  match th_exp with
+  | Eq (var1, var2)  -> Neq (var1, var2)
+  | Neq (var1, var2) -> Eq (var1, var2)

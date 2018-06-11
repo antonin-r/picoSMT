@@ -1,6 +1,8 @@
 open Types
 open Functors
 
+exception Not_sat
+
 let extract_id = function
   | Y v -> v
   | N v -> v
@@ -77,27 +79,27 @@ let rec check_formula_2 acc acc_f = function
         let literal_value = extract_value literal in
         if Sat_assoc.mem literal_id acc
         then
-          if literal_value, a = Sat_assoc.find literal_id acc
+          if literal_value = fst (Sat_assoc.find literal_id acc)
           then
             check_formula_2 acc acc_f cs
           else
             false, acc, acc_f
         else
-          check_formula_2 (Sat_assoc.add literal_id (literal_value, -1) acc) (c::acc_f) cs
+          check_formula_2 (Sat_assoc.add literal_id (literal_value, -1) acc) acc_f cs
       else
         check_formula_2 acc (c::acc_f) cs
 
 let check_formula f =
   if check_formula_1 f
   then
-    let b, preassig, new_f = check_formula_2 (Sat_assoc.empty) f in
+    let b, preassig, new_f = check_formula_2 (Sat_assoc.empty) [] f in
     if b
     then
       new_f, preassig
     else
-      failwith "there are two clauses of the forms [a] and [not(a)]"
+      raise Not_sat
   else
-    failwith "there is an unsatisfiable clause in this formula"
+    raise Not_sat
 
 let rec aux_clause f id assigs acc = function
     [] -> id+1, assigs
@@ -206,7 +208,7 @@ let rec aux_clause f id assigs acc = function
                       else
                         begin
                           print_string ">>>Fail\n";
-                          -1, assigs
+                          raise Not_sat
                         end
                     end
               end
