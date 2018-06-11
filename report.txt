@@ -1,0 +1,12 @@
+La partie du programme qui vérifie la conformité de la distribution de vérité
+renvoyée par le solveur sat utilise une structure de union find comme préconisé.
+Nous n'avons cependant pas utilisé la structure de union find persistante, car
+de nombreux ajustements sont à faire dans les informations renvoyées par le
+solveur sat pour pouvoir faire correctement les rebroussements du coté du
+Union/Find.
+Lorque le Union/Find echoue et que la distribution de vérité n'est pas cohérente
+avec la théorie, nous utilisons graph, dont les sommets représentes des 
+variables de la théories, et les arêtes des égalités, pour trouver une clause
+explicative minimale de l'échec. Un simple parcours en largeur donne le plus
+cours chemin entre les deux variables qui appartiennent à la même classe
+d'équivalence mais dont la différence devrait être assurée.
